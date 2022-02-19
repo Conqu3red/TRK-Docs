@@ -1,3 +1,14 @@
+# General Structure
+The structure of the TRK File can be broken down as seen below:
+* Header
+* Features
+* SongInfo (Optional)
+* Line Data
+* Metadata (Optional)
+
+Each section is described in more detail below, along with other references for important structures.
+
+
 # Header
 
 * **0x00:** Magic Number 54 52 4B F2 Spelling out TRKò
