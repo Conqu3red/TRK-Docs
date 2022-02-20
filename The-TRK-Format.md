@@ -50,13 +50,13 @@ Song info is only present if the `SONGINFO` feature is detected.
 
 For N Times:
 * **0x00:** Line Type + Flags
-    * **Bit 1** Line inverted, Boolean
-    * **Bit 2 and 3** Line Extension:
+    * **Bit 8** Line inverted, Boolean
+    * **Bit 7 and 6** Line Extension:
         * `0` None
         * `1` Left
         * `2` Right
         * `3` Both
-    * **Bits 3 - 8** Line Type:
+    * **Bits 5 - 1** Line Type:
         * `0` Scenery
         * `1` Blue (Standard)
         * `2` Acceleration
