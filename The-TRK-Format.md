@@ -14,7 +14,7 @@ Each section is described in more detail below, along with other references for 
 * **0x00:** Magic Number 54 52 4B F2 Spelling out TRKò
 * **0x04:** Byte indicating version (should have value 0x1)
 * **0x05:** Signed 16 bit integer denoting the length of the feature string
-* **0x07:** Feature string: list of features seperated by semicolons (see above for length)
+* **0x07:** Feature string: ASCII encoded list of features seperated by `;` (see above for length)
 
 # Features
 
@@ -23,11 +23,14 @@ Each section is described in more detail below, along with other references for 
 * `6.1` - Version 6.1 physics (default 6.2)
 * `SONGINFO` - Track contains song metadata
 * `IGNORABLE_TRIGGER`
-* `ZEROSTART`
+* `ZEROSTART` - Start rider at (0, 0)
+* The following features are only supported by LRA-CE:
+* `REMOUNT` - use LRA-CE style remounting implementation (default: no remount)
+* `FRICTIONLESS` - disable friction
 
 # C# Encoded String
 This is a reference for the C# binary standard of encoding string (reference: [here](https://docs.microsoft.com/en-us/openspecs/sharepoint_protocols/ms-spptc/89cf867b-260d-4fb2-ba04-46d8f5705555))
-
+Please refer to the the General Structure section for file structure, and each sub-structure for when this string is referred to.
 * **0x00:** Length of the UTF-8 string: 7BitEncodedInt (T)
     * reference: [here](https://docs.microsoft.com/en-us/openspecs/sharepoint_protocols/ms-spptc/1eeaf7cc-f60b-4144-aa12-4eb9f6e748d1)
 
@@ -67,6 +70,7 @@ For N Times:
             * If Zoom trigger is true:
             * **R + 2:** Target, Single precision float (4 Bytes)
             * **R + 7:** Frames, 16-Bit Signed Integer
+            * This trigger fires when the line it is attached to is touched. Taking `Frames` to reach `Target` zoom.
         * **From end of T:** Line ID: Signed 32-Bit Integer
         * If extension is not `None`
             * **From end of T + 4:** 32-Bit Signed Integer (Ignored)
@@ -75,6 +79,7 @@ For N Times:
     * Scenery Line
         * If `SCENERYWIDTH` feature is present (W)
             * **0x01:** Line Width, 1 Byte. (Divide by 10.0 to get width value)
+        * Otherwise, assume Line Width is 1.0
 
 * **S + 4:** X position of the start, Double precision float (8 Bytes)
 * **S + 12:** Y position of the start, Double precision float (8 Bytes)
@@ -82,3 +87,42 @@ For N Times:
 * **S + 26:** Y position of the end, Double precision float (8 Bytes)
 
 # Metadata
+This section may not be present. If you have reached the end of the file then there is no metadata section.
+* **0x00:** Magic Number 4D 45 54 41 Spelling out META
+* **0x04:** Number of metadata entries (N) - 16-Bit Signed Integer
+
+For N Times:
+* **0x00:** Signed 16 bit integer denoting the length of the metadata string (L)
+* **0x02:** Metadata string, ASCII encoded string of length L, a key-value pair of the structure `KEY=VALUE`, below are some possible keys and value types:
+    * NOTE: all values are stored as part of the string, as their string representation not byte representation.
+    * `STARTZOOM` - Initial camera zoom (Single precision float)
+    * The following metadata values are only supported by `LRA-CE`. `LRA` will ignore them. For compatability reasons you should preserve all metadata even if your program does not directly use or understand some of it.
+    * `YGRAVITY` - Y Gravity of rider (default 1.0) (Single precision float)
+    * `XGRAVITY` - X Gravity of rider (default 0) (Single precision float)
+    * `GRAVITYWELLSIZE` - Size of gravity wells (default 10.0) (Double precision float)
+    * `BGCOLORR` - Red Channel of background color (default 244) (Signed 32-Bit Integer)
+    * `BGCOLORG` - Green Channel of background color (default 245) (Signed 32-Bit Integer)
+    * `BGCOLORB` - Blue Channel of background color (default 249) (Signed 32-Bit Integer)
+    * `LINECOLORR` - Red Channel of line color (default 0) (Signed 32-Bit Integer)
+    * `LINECOLORG` - Green Channel of line color (default 0) (Signed 32-Bit Integer)
+    * `LINECOLORB` - Blue Channel of line color (default 0) (Signed 32-Bit Integer)
+    * `TRIGGERS` - LRA-CE implements a more advanced trigger system using metadata, see below for parsing:
+        * The list of triggers is stored as the value for the `TRIGGERS` metadata entry, with each trigger being seperated by an `&`. Note again that all values are string representations not bit representations.
+        * Each trigger stores its values seperated by `:`
+        * **values[0]** The first value is always the trigger version (Signed 32-Bit Integer):
+            * `0` - Zoom
+                * **values[1]:** Target zoom (Single precision float)
+                * **values[2]:** Start frame (Signed 32-Bit Integer)
+                * **values[3]:** End frame (Signed 32-Bit Integer)
+            * `1` - BGChange
+                * **values[1]:** Red Channel of background color (Signed 32-Bit Integer)
+                * **values[2]:** Green Channel of background color (Signed 32-Bit Integer)
+                * **values[3]:** Blue Channel of background color (Signed 32-Bit Integer)
+                * **values[4]:** Start frame (Signed 32-Bit Integer)
+                * **values[5]:** End frame (Signed 32-Bit Integer)
+            * `2` - LineColor
+                * **values[1]:** Red Channel of line color (Signed 32-Bit Integer)
+                * **values[2]:** Green Channel of line color (Signed 32-Bit Integer)
+                * **values[3]:** Blue Channel of line color (Signed 32-Bit Integer)
+                * **values[4]:** Start frame (Signed 32-Bit Integer)
+                * **values[5]:** End frame (Signed 32-Bit Integer)
