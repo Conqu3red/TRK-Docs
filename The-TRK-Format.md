@@ -14,7 +14,7 @@ Each section is described in more detail below, along with other references for 
 * **0x00:** Magic Number 54 52 4B F2 Spelling out TRKò
 * **0x04:** Byte indicating version (should have value 0x1)
 * **0x05:** Signed 16 bit integer denoting the length of the feature string
-* **0x07:** Feature string: ASCII encoded list of features seperated by `;` (see above for length)
+* **0x07:** Feature string: ASCII encoded list of features seperated by `;` (see above for length, end feature has a `;` at the end as well.)
 
 # Features
 
